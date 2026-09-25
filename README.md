@@ -4,7 +4,7 @@ I will build an AI language model that will initiate and continue conversations.
 
 ## Description
 
-An in-depth paragraph about your project and overview of use.
+I will build an AI language model that will initiate and continue conversations. This AI will have access to the web to search and respond with HOPEFULLY semi-accurate information.
 
 ## Getting Started
 
