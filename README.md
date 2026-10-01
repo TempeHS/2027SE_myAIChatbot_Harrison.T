@@ -8,6 +8,22 @@ I will build an AI language model that will initiate and continue conversations.
 
 ## Getting Started
 
+## User acceptance testing
+
+Tested on: [1/10/2026]
+Tester: [Harrison]
+
+| Test ID | Description               | Status  |
+| ------- | ------------------------- | ------- |
+| TC-001  | Normal message response   | ✅ Pass |
+| TC-002  | Empty message handling    | ✅ Pass |
+| TC-003  | Message length validation | ✅ Pass |
+| TC-004  | Crisis keyword detection  | ✅ Pass |
+| TC-005  | Disclaimer visibility     | ✅ Pass |
+| TC-006  | Message styling           | ✅ Pass |
+
+**Summary**: All 6 test cases passed. The chatbot meets all functional and non-functional requirements.
+
 ### Dependencies
 
 - Describe any prerequisites, libraries, OS version, etc., needed before installing program.

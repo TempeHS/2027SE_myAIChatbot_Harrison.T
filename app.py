@@ -40,8 +40,14 @@ list_trainer.train(
 )
 
 CRISIS_KEYWORDS = [
-    'suicide', 'kill myself', 'end my life', 'self harm', 'self-harm',
-    'dont want to live', "don't want to live", 'want to die'
+    "suicide",
+    "kill myself",
+    "end my life",
+    "self harm",
+    "self-harm",
+    "dont want to live",
+    "don't want to live",
+    "want to die",
 ]
 
 CRISIS_RESPONSE = """I'm concerned about what you've shared. Please know that you're not alone.
@@ -54,6 +60,7 @@ If you're in crisis, please reach out for support:
 
 I'm just a chatbot and can't provide the support you need, but these services have trained counselors ready to help right now."""
 
+
 def check_for_crisis(message):
     """Check if message contains crisis keywords."""
     message_lower = message.lower()
@@ -62,29 +69,31 @@ def check_for_crisis(message):
             return True
     return False
 
+
 @app.route("/")
 def home():
     """Serve the main chat page."""
     return render_template("index.html")
 
 
-@app.route('/chat', methods=['POST'])
+@app.route("/chat", methods=["POST"])
 def chat():
-    data = request.get_json()
-    user_message = data.get('message', '')
-    
-    if not user_message:
-        return jsonify({'response': 'Please enter a message!'})
-    
+    data = request.get_json(silent=True)
+    user_message = data.get("message") if isinstance(data, dict) else None
+
+    if not isinstance(user_message, str) or not user_message.strip():
+        return jsonify({"response": "Please enter a message!"})
+
+    user_message = user_message.strip()
     if len(user_message) > 500:
-        return jsonify({'response': 'Message too long!'})
-    
+        return jsonify({"response": "Message too long!"})
+
     # Safety check for crisis keywords
     if check_for_crisis(user_message):
-        return jsonify({'response': CRISIS_RESPONSE})
-    
+        return jsonify({"response": CRISIS_RESPONSE})
+
     bot_response = chatbot.get_response(user_message)
-    return jsonify({'response': str(bot_response)})
+    return jsonify({"response": str(bot_response)})
 
 
 if __name__ == "__main__":
