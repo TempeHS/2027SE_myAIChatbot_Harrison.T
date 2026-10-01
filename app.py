@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify
 from chatterbot import ChatBot
 from chatterbot.trainers import ChatterBotCorpusTrainer
 from chatterbot.trainers import ListTrainer
+import re
 
 # Create the Flask application
 app = Flask(__name__)
@@ -61,6 +62,7 @@ If you're in crisis, please reach out for support:
 I'm just a chatbot and can't provide the support you need, but these services have trained counselors ready to help right now."""
 
 
+
 def check_for_crisis(message):
     """Check if message contains crisis keywords."""
     message_lower = message.lower()
@@ -69,6 +71,30 @@ def check_for_crisis(message):
             return True
     return False
 
+def sanitise_input(message):
+    """
+    Clean and validate user input.
+    Returns cleaned message or None if invalid.
+    """
+    if not message:
+        return None
+    
+    # Remove leading/trailing whitespace
+    message = message.strip()
+    
+    # Check if message is empty after stripping
+    if not message:
+        return None
+    
+    # Remove HTML tags (prevents script injection)
+    message = re.sub(r'<[^>]+>', '', message)
+    
+    # Check length after cleaning
+    if len(message) > 500:
+        return None
+    
+    return message
+
 
 @app.route("/")
 def home():
@@ -76,25 +102,26 @@ def home():
     return render_template("index.html")
 
 
-@app.route("/chat", methods=["POST"])
+@app.route('/chat', methods=['POST'])
 def chat():
-    data = request.get_json(silent=True)
-    user_message = data.get("message") if isinstance(data, dict) else None
-
-    if not isinstance(user_message, str) or not user_message.strip():
-        return jsonify({"response": "Please enter a message!"})
-
-    user_message = user_message.strip()
-    if len(user_message) > 500:
-        return jsonify({"response": "Message too long!"})
-
-    # Safety check for crisis keywords
-    if check_for_crisis(user_message):
-        return jsonify({"response": CRISIS_RESPONSE})
-
+    """Handle chat messages and return bot responses."""
+    data = request.get_json()
+    raw_message = data.get('message', '')
+    
+    # Sanitise and validate input
+    user_message = sanitise_input(raw_message)
+    
+    if user_message is None:
+        if not raw_message or not raw_message.strip():
+            return jsonify({'response': 'Please enter a message!'})
+        else:
+            return jsonify({'response': 'Message too long! Please keep it under 500 characters.'})
+    
+    # Safety check for crisis keywords (use original for better detection)
+    if check_for_crisis(raw_message):
+        return jsonify({'response': CRISIS_RESPONSE})
+    
+    # Get the chatbot's response
     bot_response = chatbot.get_response(user_message)
-    return jsonify({"response": str(bot_response)})
-
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    
+    return jsonify({'response': str(bot_response)})
